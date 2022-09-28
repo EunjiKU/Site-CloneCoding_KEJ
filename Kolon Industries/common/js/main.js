@@ -18,7 +18,7 @@ $(function() {
       start:"center center",
       endTrigger: $(".esg_section .flow_list_w"),
       end:"bottom center",
-      // pin:true,
+      pin:true,
       pinSpacing: false,
       markers: true,
       //id: "title_fix",
