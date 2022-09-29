@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- CSS -->
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    ul, li {list-style: none;}
+    a {text-decoration: none; color: #000;}
+
+    body {background-color: lightgray;}
+
+    /* 공통 적용 */
+    .clear:after {content: ""; display: block; clear: both;}
+    .point-color {color: #f25130 !important;}
+    .abbr1 {overflow: hidden; text-overflow: ellipsis; word-wrap: break-word; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;}
+    .abbr2 {overflow: hidden; text-overflow: ellipsis; word-wrap: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;}
+    .only-pc {display: block;}
+    .only-mob {display: none;}
+    .lock-dimd {position: fixed; top: 0; left: 0; display: none; width: 100%; height: 100vh; z-index: 1000; background: rgba(0, 0, 0, .8);}
+    /* .lock-dimd.show {display: block;} */
+    @media all and (max-width: 1024px) {
+      .only-pc {display: none;}
+      .only-mob {display: block;}
+    }
+
+    #wrap {position: relative;}
+    /* Header */
+    header {position: fixed; top: 0; z-index: 10; width: calc(100% + 2px); height: 60px; transition: background .3s ease;}
+    header .inner {margin: 0; width: 100%; height: 100%;}
+    header.active {background: #000;}
+    header .logo {position: absolute; top: 14px; left: 16px; display: inline-block;}
+    header .logo img {width: 170px;}
+    header .btn-open {position: absolute; top: 23px; right: 16px;}
+    header nav {position: absolute; top: 0; right: -100%; display: none; width: 100%; height: 100%; min-height: 100vh; background: #000; transition: right .3s ease;}
+    header.show nav {right: 0;}
+    header nav .one-dep {position: relative; z-index: 1; overflow-y: auto; padding: 0 16px; border-top: 8px solid #222; background: #151515;}
+    header nav .one-dep > li {border-top: 1px solid #333;}
+    header nav .one-dep > li:first-child {border-top: 0;}
+    header nav .one-dep > li:last-child {border-bottom: 1px solid #333;}
+    /* header nav .one-dep > li:last-child .depth1:after {display: none;} */
+    header nav .depth1 {position: relative; display: block; padding: 18px 0; font-size: 18px; font-weight: 300; color: #fff; overflow: hidden;}
+    header nav .depth1:after {content: ""; position: absolute; top: 12px; right: 0; width: 28px; height: 28px; background: url(../images/icon-synop-dropdoen-wht.svg) no-repeat 0 0 / 28px 28px; transition: transform .2s ease;}
+    header nav .depth1.diff:after {display: none;}
+    header nav .depth1.active {color: #f25130;}
+    header nav .depth1.active:after {transform: rotate(180deg);}
+    header nav .two-dep {display: none;}
+    header nav .two-dep > li.active {background: #222;}
+    header nav .depth2 {position: relative; display: block; padding: 16px; font-size: 16px; font-weight: 300; color: rgba(255, 255, 255, .8); overflow: hidden;}
+    header nav .depth2.active {color: #fff;}
+    header nav .depth2.hasChild:after {content: ""; position: absolute; top: 12px; right: 16px; width: 20px; height: 20px; background: url(../images/icon-synop-dropdoen-wht.svg) no-repeat 0 0 / 20px 20px; transition: transform .2s ease;}
+    header nav .depth2.hasChild.active:after {transform: rotate(180deg);}
+    header nav .thr-dep {display: none; padding: 8px 0; border-top: 1px solid #222;}
+    header nav .depth3 {display: block; padding: 8px 32px; font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, .55);}
+    header nav .mob-member {position: relative; z-index: 1; display: block; padding: 30px 16px;}
+    header nav .mob-member .member-box {display: flex;}
+    header nav .mob-member .member-box.a-log {justify-content: space-between;}
+    header nav .mob-member .member-box .btn-login {display: block; padding-left: 26px; font-size: 16px; font-weight: 300; color: #fff; line-height: 1; background: url(../images/icon-nav-member.svg) no-repeat 0 center;}
+    header nav .mob-member .member-box .btn-join {margin-left: 8px; padding-left: 8px; font-size: 16px; font-weight: 300; color: #fff; line-height: 1; border-left: 1px solid #333;}
+    header nav .mob-member .member-box .name {font-size: 24px; font-weight: 300; color: #fff;} 
+    header nav .mob-member .member-box .email {margin-top: 16px; font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, .55); white-space: nowrap;}
+    header nav .mob-member .member-box .l-area {width: calc(100% - 145px);}
+    header nav .mob-member .member-box .r-area {width: 145px;}
+    header nav .mob-member .member-box .r-area:after {content: ""; display: block; clear: both;}
+    header nav .mob-member .member-box .btn-mypage {position: relative; display: block; float: left; font-size: 16px; font-weight: 300; color: #fff; line-height: 1;}
+    /* header nav .mob-member .member-box .btn-mypage:after {content: ""; position: absolute; top: -6px; right: -4px; width: 4px; height: 4px; background: #f25130;} */
+    header nav .mob-member .member-box .btn-mypage.new:after {content: ""; position: absolute; top: -6px; right: -4px; width: 4px; height: 4px; background: #f25130;}
+    header nav .mob-member .member-box .btn-logout {margin-left: 8px; padding-left: 8px; float: left; font-size: 16px; font-weight: 300; color: #fff; line-height: 1; border-left: 1px solid #333;}
+    header nav .nav-logo {position: relative; z-index: 1; display: block; padding: 16px;}
+    header nav .nav-logo img {width: 170px;}
+    header nav .t-layout .intro-cate {display: none;}
+    header nav .t-layout .img-box {display: none;}
+    header nav .btn-mobile-close {position: absolute; top: 16px; right: 13px; z-index: 1; display: block;}
+    header nav:after {content: ""; position: fixed; top: 0; right: -100%; display: block; width: 100%; height: 120vh; background: #000; transition: right .3s ease;}
+    header nav.active:after {right: 0;}
+    header .utils {display: none;}
+    header .btn-reserv-reset {display: none;}
+    header .reserv-title {display: none;}
+    header::before {content: ""; position: fixed; top: 0; left: -1px; width: calc(100% + 1px); height: 0; background: #000; transition: height .2s ease-out;}
+    header.hover::before {height: 380px;}
+    .reservation header {transition: background 0s ease;}
+    .reservation header .logo {display: none;}
+    .reservation header .btn-reserv-reset {position: absolute; top: 20px; left: 16px; display: block;}
+    .reservation header .reserv-title {position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: block; font-size: 16px; font-weight: 700; color: #fff;}
+    .reservation header.step4 .logo {display: none;}
+    .reservation header.step4 .btn-reserv-reset {display: none;}
+    .reservation header.step4 .reserv-title {display: block;}
+    @media all and (min-width: 1025px) {
+      /* pc */
+      header {left: 50%; transform: translateX(-50%); padding: 0; height: 90px;}
+      header .inner {margin: auto; width: 96%;}
+      header .logo {top: 28px; left: 0;}
+      header .btn-open {display: none;}
+      header nav {position: static; display: block !important; padding-left: 152px; padding-left: 16vw; min-height: 90px; background: none;}
+      header nav .mob-member {display: none;}
+      header nav .nav-logo {display: none;}
+      header nav .one-dep {position: static; display: flex; padding: 0; height: auto !important; border-top: 0; background: none;}
+      header nav .one-dep > li {border-top: 0;}
+      header nav .one-dep > li:last-child {border-bottom: 0;}
+      header nav .one-dep > li.active .depth1 {color: #f25130;}
+      header nav .one-dep > li.active .t-layout {display: flex;}
+      header nav .depth1 {padding: 30px 6px 32px; font-family: "Malgun Gothic", "애플 SD 산돌고딕 Neo", "Apple SD Gothic Neo", sans-serif; font-size: 18px; line-height: 28px; font-weight: 700; overflow: visible;}
+      header nav .depth1:after {display: none;}
+      header nav .depth1.diff-line {margin-left: 18px;}
+      header nav .depth1.diff-line:before {content: ""; position: absolute; top: 50%; left: -10px; transform: translateY(-50%); width: 1px; height: 18px; background: rgba(255, 255, 255, .5);}
+      header nav .t-layout {position: absolute; top: 90px; left: 0; padding: 40px 0 80px; width: 100%; height: 290px; display: none;}
+      header nav .t-layout .intro-cate {display: block; padding-right: 48px; width: 328px; border-right: 1px solid #333;}
+      header nav .t-layout .intro-cate .menu {font-family: "HyundaiHarmony", "Malgun Gothic", "애플 SD 산돌고딕 Neo", "Apple SD Gothic Neo", sans-serif; font-size: 36px; font-weight: 500; color: #fff;}
+      header nav .t-layout .intro-cate .desc {margin-top: 16px; font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, .55); line-height: 19px;}
+      header nav .t-layout .img-box {position: absolute; top: 38px; right: 0; display: none;}
+      header nav .depth2 {position: relative; padding: 0; font-family: "HyundaiHarmony", "Malgun Gothic", "애플 SD 산돌고딕 Neo", "Apple SD Gothic Neo", sans-serif; font-size: 22px; font-weight: 300; color: rgba(255, 255, 255, .55); overflow: visible;}
+      header nav .depth3 {display: inline-block; padding: 0; font-size: 16px; font-weight: 400;}
+      header nav .depth3:hover {color: #fff;}
+      
+      header nav .two-dep {position: relative; display: block; padding: 0 48px 0 20px; width: 308px;}
+      header nav .two-dep > li + li {margin-top: 24px;}
+      header nav .depth2.hasChild:after {background: none;}
+      header nav .two-dep > li.active {background: none;}
+      header nav .two-dep > li.active .depth2 {color: #fff;}
+      header nav .two-dep > li.active .depth2:before {content: ""; position: absolute; top: 0; left: -21px; width: 2px; height: 100%; background: #f25130;}
+      header nav .two-dep > li.active .thr-dep {display: block;}
+      header nav .thr-dep {position: absolute; top: 0; left: 306px; display: none; padding: 0 0 0 20px; width: 100%; height: 100%; border-left: 1px solid #333; border-top: 0;}
+      header nav .thr-dep > li + li {margin-top: 18px;}
+      header nav .thr-dep > li.active .depth3 {color: #fff;}
+      header nav .btn-mobile-close {display: none;}
+      header nav:after {display: none;}
+      header .utils {position: absolute; top: 20px; right: 0; display: flex; height: 48px;}
+      header .utils .log-prop {display: flex; align-items: center; margin-right: 6px;}
+      header .utils .log-prop a {padding: 8px; font-size: 14px; color: #fff;}
+      header .utils .btn-wrap .btn {padding: 0 32px; color: #222; font-size: 16px; line-height: 46px;}
+      header .utils .btn-wrap .btn > span {position: relative; display: inline-block; padding-right: 20px; background: url(../images/icon-header-btn-arrow-black.svg) no-repeat right center;}
+      /* header .utils .btn-wrap .btn:nth-child(2) > span {position: relative; display: inline-block; padding-right: 20px; background: url(../images/icon-header-btn-arrow-black.svg) no-repeat right center;} */
+      header .utils .btn-wrap .btn:hover {color: #fff;}
+      header .utils .btn-wrap .btn:hover > span, header .utils .btn-wrap .btn:focus > span {background: url(../images/icon-header-btn-arrow-white.svg) no-repeat right center;}
+      header .utils .btn-wrap .slide-box {position: absolute; top: 56px; right: 0; display: none; padding: 20px 30px; border: 1px solid #ddd; border-radius: 16px; background: #fff;}
+      header .utils .btn-wrap .slide-box .btn-rev {display: block; padding: 12px 0; font-size: 16px; font-weight: 700; color: rgba(0, 0, 0, .55);}
+      /* header .utils .btn-wrap .slide-box .btn-rev + .btn-rev {margin-top: 24px;} */
+      header .utils .btn-wrap .slide-box .btn-rev span {position: relative;}
+      header .utils .btn-wrap .slide-box .btn-rev span:after {content: ""; position: absolute; bottom: -3px; left: 0; width: 0; height: 2px; background: #f25130; transition: width .2s ease;}
+      /* header .utils .btn-wrap .slide-box .btn-rev .rev-anchor span:after {content: ""; position: absolute; bottom: -3px; left: 0; width: 0; height: 2px; background: #f25130; transition: width .2s ease;} */
+      header .utils .btn-wrap .slide-box .btn-rev:hover, header .utils .btn-wrap .slide-box .btn-rev:focus {color: #000;}
+      header .utils .btn-wrap .slide-box .btn-rev:hover span:after, header .utils .btn-wrap .slide-box .btn-rev:focus span:after {width: 100%;}
+      /* header .btn-wrap .slide-box .rev-one-dep .rev-anchor {background: url(../images/icon-reserve-dropdown.png) no-repeat right center;}
+      header .btn-wrap .slide-box .rev-one-dep.active .rev-anchor {background: url(../images/icon-reserve-dropdown-on.png) no-repeat right center;}
+      header .btn-wrap .slide-box .rev-one-dep .rev-two-dep {padding: 0 16px; height: 0; overflow: hidden; border-radius: 8px; background: #f5f5f5; transition: margin .2s ease;}
+      header .btn-wrap .slide-box .rev-one-dep .rev-two-dep.active {padding: 16px 16px; margin-top: 17px; height: 100%;}
+      header .btn-wrap .slide-box .rev-one-dep > a span {margin-right: 21px;}
+      header .btn-wrap .slide-box .rev-one-dep .rev-two-dep .rev-depth2 {display: block; margin-top: 12px; width: 100%; font-family: "Malgun Gothic", "애플 SD 산돌고딕 Neo", "Apple SD Gothic Neo", sans-serif; font-size: 14px; line-height: 20px; font-weight: 900; letter-spacing: -.04em; color: rgba(0, 0, 0, .55);}
+      header .btn-wrap .slide-box .rev-one-dep .rev-two-dep .rev-depth2:nth-child(1) {margin-top: 0;}
+      header .btn-wrap .slide-box .rev-one-dep .rev-two-dep .rev-depth2:hover {color: rgba(0, 0, 0, 1);} */
+
+      .reservation header .logo {display: inline-block;}
+      .reservation header .btn-reserv-reset {display: none;}
+      .reservation header .reserv-title {display: none;}
+
+      .reservation header.step4 .logo {display: block;}
+      .reservation header.step4 .btn-reserv-reset {display: none;}
+      .reservation header.step4 .reserv-title {display: none;}
+    }
+    @media all and (min-width: 1300px) {
+      header nav {padding-left: 236px; padding-left: 256px;}
+      header nav .depth1 {padding: 30px 24px 32px;}
+      header nav .depth1.diff-line {margin-left: 48px;}
+      header nav .depth1.diff-line:before {left: -25px;}
+    }
+    @media all and (min-width: 1540px) {
+      header .inner {margin: auto; width: 1440px;}
+      header .logo img {width: 192px;}
+      header nav .t-layout .img-box {display: block; width: 428px; height: 170px; overflow: hidden;}
+      header nav .t-layout .img-box img {width: 100%;}
+    }
+
+    /*  */
+
+    footer {padding: 30px 16px 32px; border-top: 2px solid #333; background: #000;}
+footer .inner {margin: 0;}
+footer .float-btns {position: fixed; bottom: 16px; right: 16px; z-index: 5; display: block;}
+footer .float-btns.freeze {position: absolute; top: -84px; bottom: unset;}
+footer .float-btns li {position: relative; transition: all .5s ease;}
+footer .float-btns li:nth-child(1) {z-index: 1; transform: translateY(62px);}
+/* footer .float-btns li.btn-squ-wrap:nth-child(1) {position: absolute; top: 0; z-index: 1; transform: translateY(62px);} */
+footer .float-btns li:nth-child(2) {opacity: 0;}
+footer .float-btns li + li {margin-top: 8px;}
+footer .float-btns.active li:nth-child(1) {/* top: -62px; */ transform: translateY(0);}
+footer .float-btns.active li:nth-child(2) {opacity: 1;}
+footer .float-btns .btn-squ {display: block; padding: 19px 0; width: 54px; height: 54px; font-size: 16px; font-weight: 500; color: #fff; text-align: center; border-radius: 16px; background: linear-gradient(120deg, #ff8933, #ea2e2e, #aaa, #aaa); background-size: 400%; background-position: 100% 100%; transition: all .4s ease;}
+footer .float-btns .btn-squ.reservation {margin-top: 8px; background: linear-gradient(120deg, #ff8933, #ea2e2e, #777, #777); background-size: 400%; background-position: 100% 100%;}
+footer .float-btns .btn-squ:hover, footer .float-btns .btn-squ:focus {animation: btnHover .7s forwards alternate;}
+footer .float-btns .box {position: absolute; bottom: 62px; right: 0; display: none; padding: 24px; border: 1px solid #ddd; border-radius: 16px; background: #fff;}
+footer .float-btns .box .link {display: inline-block; margin-top: 24px; font-size: 16px; font-weight: 500; color: #000; white-space: nowrap; opacity: 0; transition: all 1.2s ease;}
+footer .float-btns .box .btn-rev {margin-top: 0; white-space: nowrap;}
+/* footer .float-btns .box .btn-rev .rev-anchor {display: inline-block; margin-top: 24px; font-family: "HyundaiHarmony", "Malgun Gothic", "애플 SD 산돌고딕 Neo", "Apple SD Gothic Neo", sans-serif; font-size: 16px; font-weight: 500; color: #000; white-space: nowrap; opacity: 0; transition: all 1.2s ease;}
+footer .float-btns .box .btn-rev:nth-child(1) .rev-anchor {margin-top: 0;}
+footer .float-btns .box .rev-one-dep > a span {position: relative;} */
+/* footer .float-btns .box .rev-one-dep > a span::before {content: ""; position: absolute; top: 0; right: -20px; width: 16px; height: 16px; background: url(../images/icon-reserve-dropdown.png) no-repeat;} */
+/* footer .float-btns .box .rev-one-dep > a span {padding-right: 20px; background: url(../images/icon-reserve-dropdown-on.png) no-repeat right center;}
+footer .float-btns .box .btn-rev .rev-two-dep {padding: 0 16px; height: 0; border-radius: 8px; background: #f5f5f5; overflow: hidden;}
+footer .float-btns .box .btn-rev .rev-two-dep .rev-depth2 {display: block; margin-top: 16px;}
+footer .float-btns .box .btn-rev .rev-two-dep .rev-depth2 span {font-family: "HyundaiHarmony", "Malgun Gothic", "애플 SD 산돌고딕 Neo", "Apple SD Gothic Neo", sans-serif; font-size: 14px; line-height: 20px; font-weight: 500; letter-spacing: -.025em;}
+footer .float-btns .box .btn-rev .rev-two-dep .rev-depth2:nth-child(1) {margin-top: 0;}
+footer .float-btns .box.active .btn-rev {opacity: 1;}
+footer .float-btns .box .btn-rev .rev-two-dep.active {padding: 16px; margin-top: 16px; height: 100%;}
+footer .float-btns .box .btn-rev .rev-anchor {opacity: 1;} */
+/* footer .float-btns .box .link {display: inline-block; margin-top: 24px; font-size: 16px; font-weight: 500; color: #000; white-space: nowrap; opacity: 0; transition: all 1.2s ease;} */
+footer .float-btns .box .link:nth-child(1) {margin-top: 0;}
+footer .float-btns .box.active .link {opacity: 1;}
+footer .float-btns .box .link {display: inline-block; margin-top: 24px; font-size: 16px; font-weight: 500; color: #000; white-space: nowrap; opacity: 0; transition: all 1.2s ease;}
+footer .float-btns .box .link:nth-child(1) {margin-top: 0;}
+footer .float-btns .box.active .link {opacity: 1;}
+  </style>
+</head>
+<body>
+  <!-- 본문 바로가기 -->
+  <div id="skipNavi"><a href="#wrap">본문 바로가기</a></div>
+        
+  <!-- top btn -->
+  <a class="btn-top" href="javascript:" role="button"><img src="./images/btn-top.svg" alt="상단으로 이동"></a>
+
+  <!-- header Class -->        
+  <header class="transparent">
+    <div class="inner">
+      <h1><a class="logo" href="/kr/main"><img src="./images/HMG-logo-white.svg" alt="HMG Driving Experience"></a></h1><!-- 예약하기에서는 비노출 -->
+      <a class="btn-reserv-reset" href="javascript:" onclick="common.popupCalled('#popupReset', $(this))"><img src="/kr/common/images/icon-reset-white.svg" alt="선택사항 초기화"></a><!-- 예약하기에서만 노출 -->
+      <button class="btn-open"><img src="/kr/common/images/icon-mobile-btn-open.svg" alt="네비게이션 열기"></button><!-- 모바일 gnb 오픈 버튼 -->
+      <div class="reserv-title">예약하기</div><!-- 예약하기페이지에서만 노출 / header 중앙정렬 메뉴명 -->
+        <nav>
+        <div class="nav-logo">
+          <a href="/kr/main"><img src="/kr/common/images/logo-white.svg" alt="HMG Driving Experience"></a>
+        </div>
+        <div class="mob-member">
+          <div class="member-box b-log">
+            <a class="btn-login" href="https://drivingexperience.hyundai.co.kr:443/kr/member-login">로그인</a>
+            <a class="btn-join" href="https://drivingexperience.hyundai.co.kr:443/kr/member-join/step1">회원가입</a>
+          </div>
+        </div>
+        <ul class="one-dep" body-scroll-lock-ignore>
+          <li>
+            <a class="depth1 " href="javascript:">센터</a>
+            <div class="t-layout">
+              <div class="intro-cate">
+                <div class="menu"><strong>센터</strong></div>
+                <div class="desc">특별한 경험과 즐거움을 제공하는
+                  <br/>국내 최대 규모의 드라이빙 센터</div>
+                </div>
+                <ul class="two-dep">
+                    <li>
+                        <a class="depth2" href="/kr/hmg-driving-experience/about/contents" target="_self">센터 소개</a>
+                        </li>
+                    <li>
+                        <a class="depth2" href="/kr/hmg-driving-experience/track-guide/contents" target="_self">트랙 안내</a>
+                        </li>
+                    <li>
+                        <a class="depth2" href="/kr/hmg-driving-experience/usage-information/contents" target="_self">이용 안내</a>
+                        </li>
+                    <li>
+                        <a class="depth2" href="/kr/hmg-driving-experience/location/contents" target="_self">오시는 길</a>
+                        </li>
+                    </ul>
+                          <div class="img-box"><img src="/kr/image/2022/08/center-600x315-1.jpg" alt="센터"></div>
+                          </div>
+                      </li>
+                  <li>
+                      <a class="depth1 weird" href="javascript:">드라이빙 프로그램</a>
+                      <div class="t-layout">
+                          <div class="intro-cate">
+                              <div class="menu"><strong>드라이빙 프로그램</strong></div>
+                              <div class="desc">국내 최고 수준의 인스트럭터와 함께하는
+<br/>맞춤형 교육 프로그램</div>
+                          </div>
+                          <ul class="two-dep">
+                              <li>
+                                  <a class="depth2" href="/kr/program-intro/contents" target="_self">프로그램 개요</a>
+                                  </li>
+                              <li>
+                                  <a class="depth2 hasChild" href="javascript:" target="_self">드라이빙 익스피리언스</a>
+                                  <ul class="thr-dep">
+                                        <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/program/driving-experience/hyundai" target="_self">현대</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/program/driving-experience/kia" target="_self">기아</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/program/driving-experience/genesis" target="_self">제네시스</a>
+                                      </li>
+                                      </ul>
+                                  </li>
+                              <li>
+                                  <a class="depth2 hasChild" href="javascript:" target="_self">드라이빙 플레저</a>
+                                  <ul class="thr-dep">
+                                        <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/program/driving-pleasure/taxi" target="_self">택시 드라이브</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/program/driving-pleasure/test-drive" target="_self">HMG 테스트 드라이브</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/program/driving-pleasure/kids-driving-experience" target="_self">HMG 주니어 드라이빙 익스피리언스</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/program/driving-pleasure/tour" target="_self">HMG 드라이빙 익스피리언스 센터 투어</a>
+                                      </li>
+                                      </ul>
+                                  </li>
+                              </ul>
+                          <div class="img-box"><img src="/kr/image/2022/07/img-navigation-depth2-1.jpg" alt="@드라이빙 프로그램"></div>
+                          </div>
+                      </li>
+                  <li>
+                      <a class="depth1 " href="javascript:">고객 지원</a>
+                      <div class="t-layout">
+                          <div class="intro-cate">
+                              <div class="menu"><strong>고객 지원</strong></div>
+                              <div class="desc">현대자동차그룹의 차별화 된
+<br/>고객지원 서비스</div>
+                          </div>
+                          <ul class="two-dep">
+                              <li>
+                                  <a class="depth2" href="/kr/customer-center/dx-community/appctn" target="_self">DX 커뮤니티</a>
+                                  </li>
+                              <li>
+                                  <a class="depth2" href="/kr/customer-center/notice/board/list" target="_self">공지사항</a>
+                                  </li>
+                              <li>
+                                  <a class="depth2" href="/kr/customer-center/faq/board/list" target="_self">FAQ</a>
+                                  </li>
+                              <li>
+                                  <a class="depth2" href="/kr/customer-center/online-inquiry" target="_self">Q&A</a>
+                                  </li>
+                              </ul>
+                          <div class="img-box"><img src="/kr/image/2022/07/img-navigation-depth4-1.jpg" alt="고객 지원"></div>
+                          </div>
+                      </li>
+                  <!-- GNB 일정/이벤트 메뉴에만 클래스 추가 -->
+                          <li>
+                      <a class="depth1 diff" href="/kr/scheduleEvent/gallery/board/list">일정/이벤트</a>
+                      </li>
+                  <li>
+                      <a class="depth1  diff-line" href="javascript:">현대 N 체험</a>
+                      <div class="t-layout">
+                          <div class="intro-cate">
+                              <div class="menu"><strong>현대 N 체험</strong></div>
+                              <div class="desc">모터스포츠의 경험을 바탕으로
+<br/>드라이빙 본연의 재미를 추구하는
+<br/>현대 N 체험</div>
+                          </div>
+                          <ul class="two-dep">
+                              <li>
+                                  <a class="depth2 hasChild" href="javascript:" target="_self">현대 N 페스티벌</a>
+                                  <ul class="thr-dep">
+                                        <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/n-festival/about/index" target="_self">소개</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/n-festival/schedule/list" target="_self">스케줄</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/n-festival/video/board/list" target="_self">Live & Video</a>
+                                      </li>
+                                      </ul>
+                                  </li>
+                              <li>
+                                  <a class="depth2 hasChild" href="javascript:" target="_self">현대 N e-페스티벌</a>
+                                  <ul class="thr-dep">
+                                        <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/n-e-festival/about/index" target="_self">소개</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/n-e-festival/schedule/list" target="_self">스케줄</a>
+                                      </li>
+                                      </ul>
+                                  </li>
+                              <li>
+                                  <a class="depth2 hasChild" href="javascript:" target="_self">현대 N 사이클링 페스티벌</a>
+                                  <ul class="thr-dep">
+                                        <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/n-cycling/festival/contents" target="_self">소개</a>
+                                      </li>
+                                      </ul>
+                                  </li>
+                              <li>
+                                  <a class="depth2 hasChild" href="javascript:" target="_self">현대 N 라운지</a>
+                                  <ul class="thr-dep">
+                                        <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/n-lounge/about/index" target="_self">소개</a>
+                                      </li>
+                                      <li>
+                                          <a class="depth3" href="https://drivingexperience.hyundai.co.kr:443/kr/n-lounge/reservation/contents" target="_self">N 테스트랩</a>
+                                      </li>
+                                      </ul>
+                                  </li>
+                              </ul>
+                          <div class="img-box"><img src="/kr/image/2022/07/img-navigation-depth3-1.jpg" alt="현대 N 체험"></div>
+                          </div>
+                      </li>
+                  </ul>
+                <a class="btn-mobile-close" href="javascript:" role="button"><img src="/kr/common/images/icon-nav-close.svg" alt="닫기"></a>
+          </nav>
+          <div class="utils">
+          <div class="log-prop b-log">
+                    <a class="btn-login" href="https://drivingexperience.hyundai.co.kr:443/kr/member-login">로그인</a>
+                    <a class="btn-join" href="https://drivingexperience.hyundai.co.kr:443/kr/member-join/step1">회원가입</a>
+                  </div>
+              <div class="btn-wrap secondary dark">
+                  <a class="btn high" href="javascript:"><span>예약하기</span></a>
+                  <div class="slide-box">
+                      <a class="btn-rev" href="javascript:" onclick="footCtrl.rsvtn()"><span>드라이빙 프로그램</span></a>
+                      <a class="btn-rev" href="https://drivingexperience.hyundai.co.kr:443/kr/n-festival/schedule/list"><span>현대 N 페스티벌</span></a>
+                  </div>
+                  <!-- 
+                  <ul class="slide-box">
+                      <li class="btn-rev">
+                          <a class="rev-anchor" href="javascript:" onclick="footCtrl.rsvtn()"><span>드라이빙 프로그램</span></a>
+                      </li>
+                      <li class="rev-one-dep btn-rev">
+                          <a class="rev-anchor" href="javascript:" role="button"><span>현대 N 체험</span></a>
+                          <div class="rev-two-dep">
+                              <a class="rev-depth2" href="https://drivingexperience.hyundai.co.kr:443/kr/n-festival/schedule/list"><span>현대 N 페스티벌</span></a>
+                              <a class="rev-depth2" href="https://drivingexperience.hyundai.co.kr:443/kr/n-lounge/reservation/step1"><span>N 테스트랩</span></a>
+                          </div>
+                      </li>
+                  </ul>
+                  -->
+              </div>
+          </div>
+      </div>
+  </header>
+  
+
+
+
+  
+  <!-- JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+  <script>
+    $(function() {
+      /* PC일때 네비게이션 노출 */
+      var delayedCall;
+      var NAV = document.querySelector("header nav");
+      $("header nav .depth1").on("mouseenter focusin", function () {
+        if (window.innerWidth > 1024) {
+          if (!$(this).hasClass("diff")) {
+            var THIS = this;
+            $("header").addClass("hover");
+            if (delayedCall != undefined) delayedCall.kill();
+            delayedCall = gsap.delayedCall(0.1, function () {
+              var index = $(THIS).parent().index();
+              $("header nav li").removeClass("active");
+              $(THIS).parent().siblings("li").removeClass("active");
+              $(THIS).parent().addClass("active");
+            })
+          } else {
+            $("header nav").trigger("mouseleave");
+            $(this).parent().addClass("active");
+            // if(delayedCall != undefined) delayedCall.kill();
+            // $("header").removeClass("hover");
+            // $("header nav > ul > li").removeClass("active");
+          }
+
+          if($(this).hasClass("weird")) {
+            var THIS = this;
+            gsap.delayedCall(0.1, function() {
+              $(THIS).parent().find(".two-dep > li:eq(1)").addClass("active");
+            })
+          } else {
+
+          }
+        }
+      });
+
+      $("header nav .depth2").on("mouseenter focusin", function () {
+        if (window.innerWidth > 1024) {
+          $("header nav .two-dep li").removeClass("active");
+          $(this).parent().addClass("active");
+        }
+      });
+
+      $("header nav").on("mouseleave", function () {
+        if (window.innerWidth > 1024) {
+          if (delayedCall != undefined) delayedCall.kill();
+          $("header").removeClass("hover");
+          $("header nav > ul > li").removeClass("active");
+        }
+      });
+
+      $("header .utils a").on("focusin", function () {
+        if (window.innerWidth > 1024) {
+          $("header").removeClass("hover");
+          $("header nav > ul > li").removeClass("active");
+        }
+      })
+      /* //PC일때 네비게이션 노출 */
+
+      /* 모바일일때 네비게이션 노출 */
+      var cIndex;
+      $("header nav .depth1").on("click", function () {
+        if (window.innerWidth <= 1024) {
+          var index = $(this).parent().index();
+          if (cIndex == undefined) {
+            $(this).attr("title", "메뉴 닫기");
+            $(this).addClass("active").parent().find(".two-dep").stop(true, true).slideDown(300);
+            cIndex = $("header nav .depth1.active").parent().index();
+
+            //프로그램 > 드라이빙 익스피리언스 강제 펼치기
+            if($(this).hasClass("weird")) {
+              var THIS = this;
+              gsap.delayedCall(0.1, function() {
+                $(THIS).parent().find(".two-dep > li:eq(1)").addClass("active");
+                $(THIS).parent().find(".two-dep > li:eq(1) > a").addClass("active");
+                $(THIS).parent().find(".two-dep > li:eq(1) > a").next().stop(true,true).slideDown(0);
+              })
+            }
+          } else {
+            if (cIndex != index) {
+              $("header nav .one-dep > li:eq(" + cIndex + ") .depth1").attr("title", "메뉴 펼치기");
+              $("header nav .one-dep > li:eq(" + cIndex + ") .depth1").removeClass("active");
+              $("header nav .one-dep > li:eq(" + cIndex + ") .two-dep").stop(true, true).slideUp(300);
+              $(this).attr("title", "메뉴 닫기");
+              $(this).addClass("active").parent().find(".two-dep").stop(true, true).slideDown(300);
+              cIndex = $("header nav .depth1.active").parent().index();
+
+              //프로그램 > 드라이빙 익스피리언스 강제 펼치기
+              if($(this).hasClass("weird")) {
+                var THIS = this;
+                gsap.delayedCall(0.1, function() {
+                  $(THIS).parent().find(".two-dep > li:eq(1) > a").addClass("active");
+                  $(THIS).parent().find(".two-dep > li:eq(1) > a").next().stop(true,true).slideDown(0);
+                })
+              }
+            } else {
+              $(this).attr("title", "메뉴 펼치기");
+              $(this).removeClass("active").parent().find(".two-dep").stop(true, true).slideUp(300);
+
+              $(this).removeClass("active").parent().find(".two-dep > li").removeClass("active");
+              $(this).removeClass("active").parent().find(".two-dep").find(".depth2").removeClass("active");
+              $(this).removeClass("active").parent().find(".two-dep").find(".thr-dep").stop(true, true).slideUp(300);
+              cIndex = undefined;
+            }
+          }
+        }
+      })
+
+      $("header nav .depth2.hasChild").on("click", function () {
+        if (window.innerWidth <= 1024) {
+          if (!$(this).hasClass("active")) {
+            $("header nav .depth2.hasChild").attr("title", "메뉴 펼치기");
+            $("header nav .depth2.hasChild").removeClass("active").parent().removeClass("active").end().next().stop(true, true).slideUp(300);
+            $(this).attr("title", "메뉴 닫기");
+            $(this).addClass("active").parent().addClass("active").end().next().stop(true, true).slideDown(300);
+          } else {
+            $(this).attr("title", "메뉴 펼치기");
+            $("header nav .depth2.hasChild").removeClass("active").parent().removeClass("active").end().next().stop(true, true).slideUp(300);
+          }
+        }
+      })
+
+      var lockElement = document.querySelector("#wrap");
+      $("header .btn-open").on("click", function () {
+        NAV.style.display = "block";
+        gsap.to("header nav", {duration: 0.1, right: 0, ease: Power3.easeOut });
+        gsap.delayedCall(0.1, function() {
+          $("header nav").addClass("active");
+        })
+
+        if($(".top-banner").is(":visible")) {
+          $("header nav .one-dep").height(window.innerHeight - $("header nav .nav-logo").innerHeight() - $("header nav .mob-member").innerHeight() - 10 - $(".top-banner").height()); //모바일일때 onedepth set height
+        } else {
+          $("header nav .one-dep").height(window.innerHeight - $("header nav .nav-logo").innerHeight() - $("header nav .mob-member").innerHeight() - 10); //모바일일때 onedepth set height
+        }
+
+        bodyScrollLock.disableBodyScroll(lockElement, {
+          allowTouchMove: function (el) {
+            while (el && el !== document.body) {
+              if (el.getAttribute('body-scroll-lock-ignore') !== null) {
+                return true;
+              }
+  
+              el = el.parentElement;
+            }
+          },
+        });
+      });
+
+      $("header .btn-mobile-close").on("click", function () {
+        $("header nav").removeClass("active");
+        gsap.to("header nav", { duration: 0.1, right: "-100%", ease: Power3.easeOut });
+        gsap.delayedCall(0.4, function () {
+          NAV.style.display = "none";
+        });
+
+        $("header .btn-open").attr("tabindex", 0).focus();
+        bodyScrollLock.enableBodyScroll(lockElement);
+      })
+      /* //모바일일때 네비게이션 노출 */
+
+      /* PC 예약하기  */
+      var intervalRerv;
+      // var isRevClicked = true;
+      // var revOneDep = $("header .utils .btn-wrap .slide-box .rev-one-dep");
+      $("header .utils .btn-wrap .btn").attr("title", "하위 컨텐츠 축소됨");
+      $("header .utils .btn-wrap .btn").on("click", function () {
+        if ($("header .utils .btn-wrap .slide-box").is(":hidden")) {
+          if(_browser !== "ie") {
+            $("header .utils .btn-wrap .slide-box").show().css("opacity", 0);
+            gsap.fromTo("header .utils .btn-wrap .slide-box", { right: -50, opacity: 0 }, { duration: 0.3, right: 0, opacity: 1, ease: Cubic.easeOut });
+          } else {
+            $("header .utils .btn-wrap .slide-box").show().css("opacity", 1);
+          }
+
+          $("header .utils .btn-wrap .btn").attr("title", "하위 컨텐츠 확장됨");
+        } else {
+          if(_browser !== "ie") {
+            gsap.fromTo("header .utils .btn-wrap .slide-box", { right: 0, opacity: 1 }, { duration: 0.3, right: 50, opacity: 0, ease: Cubic.easeOut });
+            gsap.delayedCall(0.3, function () {
+              $("header .utils .btn-wrap .slide-box").hide();
+            }); 
+            // $("header .utils .btn-wrap .slide-box .rev-one-dep").children(".rev-two-dep").removeClass("active");
+            // isRevClicked = false;
+          } else {
+            $("header .utils .btn-wrap .slide-box").hide().css("opacity", 0);
+          }
+
+          $("header .utils .btn-wrap .btn").attr("title", "하위 컨텐츠 축소됨");
+        }
+        // isRevClicked = true;
+      });
+
+      // $("header .utils .btn-wrap .slide-box .btn-rev .rev-depth2:last").on("focusout", function () {
+        $("header .utils .btn-wrap .slide-box .btn-rev:last").on("focusout", function () {
+        if(_browser !== "ie") {
+          gsap.fromTo("header .utils .btn-wrap .slide-box", { right: 0, opacity: 1 }, { duration: 0.3, right: 50, opacity: 0, ease: Cubic.easeOut });
+          gsap.delayedCall(0.3, function () {
+            $("header .utils .btn-wrap .slide-box").hide();
+          });
+          // $("header .utils .btn-wrap .slide-box .rev-one-dep").children(".rev-two-dep").removeClass("active");
+          // isRevClicked = false;
+        } else {
+          $("header .utils .btn-wrap .slide-box").hide().css("opacity", 0);
+        }
+      })
+
+      /* //PC 예약하기  */
+
+      $(window).on("resize", _.throttle(function () {
+        if (window.innerWidth > 1024) {
+          //네비게이션 styles 초기화
+          cIndex = undefined;
+          $("header nav li").removeClass("active");
+          $("header nav .depth1").removeClass("active");
+          $("header nav .depth2").removeClass("active");
+          $("header nav .two-dep").removeAttr("style");
+          $("header nav .thr-dep").removeAttr("style");
+        } else {
+          $("header").removeClass("hover");
+          /* 2022-03-15 IOS nav영역 스크롤링시 bg 높이값만큼 채우기 */
+          $("header nav .one-dep").height(window.innerHeight - $("header nav .nav-logo").innerHeight() - $("header nav .mob-member").innerHeight() - 10);//모바일일때 onedepth set height
+        }
+      }, 20)).trigger("resize");
+    
+      //예약 플로팅 버튼
+      var isReservation = false;
+      // var isRevClicked = true;
+      // var revTwoDepth = $("footer .float-btns .box .rev-one-dep .rev-anchor");
+      var btnResBox = $("footer .float-btns .box");
+      $("footer .btn-squ.reservation").on("click", function () {
+        if (!isReservation) {
+          btnResBox.show();
+          btnResBox.addClass("active");
+          $("footer .float-btns").css("zIndex", 7);
+        } else {
+          btnResBox.hide();
+          btnResBox.removeClass("active");
+          $("footer .float-btns").css("zIndex", 5);
+          // revTwoDepth.siblings(".rev-two-dep").removeClass("active");
+          // isRevClicked = true;
+        }
+        isReservation = !isReservation;
+      });
+
+      btnResBox.children(".link").eq(1).on("focusout", function() {
+        btnResBox.hide();
+        btnResBox.removeClass("active");
+        isReservation = !isReservation;
+      });
+
+      //모바일 - 현차, 이노션, 플레이그라운드 slides
+      $("footer .company-info .c-name").on("click", function () {
+        var PARENT = $(this).parent();
+        var NEXTEL = $(this).next();
+        if (window.innerWidth < 1025) {
+          if (!PARENT.hasClass("active")) {
+            $(this).attr("aria-expanded", "true");
+            PARENT.addClass("active");
+            NEXTEL.stop(true, true).slideDown(300);
+          } else {
+            $(this).attr("aria-expanded", "false");
+            PARENT.removeClass("active");
+            NEXTEL.stop(true, true).slideUp(300);
+          }
+        }
+      });
+
+      //TOP버튼
+      $(".float-btns .btn-top").on("click", function () {
+        gsap.to("html, body", { duration: 0.5, scrollTop: 0, ease: Power3.easeOut });
+      });
+
+      // 예약 버튼 미노출(N페스티벌 예약, N라운지 예약, Q&A 작성)
+      $(".layout-col").each(function () {
+        if ($(this).hasClass("join-step")) {
+          $("footer .float-btns ul").find("li").eq(0).css({ display: "none" });
+        }
+        if ($(this).hasClass("lounge-reservation")) {
+          $("footer .float-btns ul").find("li").eq(0).css({ display: "none" });
+        }
+        if ($(this).hasClass("ct-qna")) {
+          $("footer .float-btns ul").find("li").eq(0).css({ display: "none" });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
